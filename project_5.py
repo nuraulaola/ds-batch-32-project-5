@@ -122,7 +122,7 @@ plt.title('Top 5 Customers with the Highest Purchases')
 plt.tight_layout()  # Adjust layout
 plt.show()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
 The customers with the highest purchases are as follows:
 
@@ -163,7 +163,7 @@ plt.title('Top 10 Products with the Highest Purchases')
 plt.tight_layout()  # Adjust layout
 plt.show()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
 The top-selling products are as follows:
 
@@ -200,7 +200,7 @@ plt.ylabel('Total Revenue')
 plt.tight_layout()  # Adjust layout
 plt.show()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
 1. The highest revenue point is in September 2011, at around $240,000.
 
@@ -237,7 +237,7 @@ clusters = kproto.fit_predict(data_combined.values, categorical=cat_columns_indi
 grouped_df['Cluster'] = clusters # Add cluster labels
 grouped_df.head()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
 1. On the 14th iteration, moves were already zero in the second run, while in the first run, moves only reached zero on the 17th iteration. This indicates that in the second run, the algorithm achieves convergence faster in grouping data points into clusters.
 
@@ -256,21 +256,22 @@ print("Cluster Centroids:\n", cluster_centroids)
 
 A Silhouette Score of 0.98 for 3 clusters is very high and close to the maximum value of 1. This suggests that the clusters are well-separated and distinct from each other. High Silhouette Scores generally indicate good clustering results, where each data point is closer to its own cluster than to the neighboring clusters.
 
-## **3.2  Analysis of Cluster Characteristics**
+## **3.3  Analysis of Cluster Characteristics**
 
-### **3.2.1 Cluster Profiles Analysis**
+### **3.3.1 Cluster Profiles Analysis**
 """
 
 cluster_profiles = grouped_df.groupby('Cluster').mean() # Analyze cluster profiles
 cluster_profiles.plot(kind='bar', figsize=(12, 6), colormap='PuRd') # Plot cluster profiles
+plt.yscale('log')
 plt.title('Cluster Profiles')
 plt.xlabel('Cluster')
-plt.ylabel('Mean Value')
+plt.ylabel('Mean Value (log scale)')
 plt.legend(title='Feature', bbox_to_anchor=(1, 1))
 plt.tight_layout() # Auto adjust
 plt.show()
 
-"""Insights ⭐
+"""Insight ⭐
 
 1. **Cluster 0:** Customers in Cluster 0 have relatively lower average values across all metrics, indicating that they might be making smaller and less frequent purchases.
 
@@ -278,7 +279,7 @@ plt.show()
 
 3. **Cluster 2:** Customers in Cluster 2 stand out with significantly higher average values for 'Quantity' and 'Revenue'. This cluster likely represents high-value customers who make large and frequent purchases.
 
-### **3.2.2 Cluster Separation Visualization**
+### **3.3.2 Cluster Separation Visualization**
 """
 
 pca = PCA(n_components=2) # Visualize cluster separation using PCA
@@ -297,13 +298,15 @@ plt.ylabel('Principal Component 2')
 plt.legend()
 plt.show()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
-1. Cluster 2 may have significantly different values in one or several features compared to other clusters. This can result in the separation of Cluster 2 in visualizations.
+1. **Cluster 0:** Customers in this cluster show a wide range of behavior based on PC1 and PC2.
 
-2. The relatively dense nature of Cluster 1 suggests that the data within this cluster has lower variability or exhibits a more uniform pattern in certain features.
+2. **Cluster 1:** Customers in this cluster exhibit relatively similar behavior, as indicated by the small values of PC1 and PC2. Targeted marketing or services tailored to this specific group might be more effective.
 
-### **3.2.3 Number of Observations in Each Cluster**
+3. **Cluster 2:** Cluster 2 has high values for PC1, indicating a unique pattern or behavior. This group may represent a distinct segment of customers with specific preferences or characteristics that differentiate them from others.
+
+### **3.3.3 Number of Observations in Each Cluster**
 """
 
 clustered_groups = grouped_df.groupby('Cluster')
@@ -319,7 +322,7 @@ plt.ylabel('Number of Observations (log scale)')
 plt.tight_layout() # Auto adjust
 plt.show()
 
-"""Conclusion 🔍
+"""Insight ⭐
 
 1. **Cluster 0:** Contains 11 observations.
 
@@ -329,7 +332,7 @@ plt.show()
 
 In summary, the "Num_Observations" column represents the count of data points within each cluster. It indicates how many data points are assigned to each cluster based on the clustering analysis. In this case, Cluster 1 has a significantly larger number of observations compared to Clusters 0 and 2.
 
-## **3.3  Promotions for Each Cluster**
+## **3.4  Promotions for Each Cluster**
 """
 
 def create_promotions(grouped_df): # To create promotions based on cluster
@@ -383,18 +386,74 @@ A Silhouette Score of 0.9131 for 3 clusters is very high and close to the maximu
 
 non_uk_cluster_profiles = non_uk_df.groupby('Cluster').mean() # Analyze cluster profiles
 non_uk_cluster_profiles.plot(kind='bar', figsize=(12, 6), colormap='PuRd') # Plot cluster profiles
+plt.yscale('log')
 plt.title('Cluster Profiles')
 plt.xlabel('Cluster')
-plt.ylabel('Mean Value')
+plt.ylabel('Mean Value (log scale)')
 plt.legend(title='Feature', bbox_to_anchor=(1, 1))
 plt.tight_layout() # Auto adjust
 plt.show()
 
-"""Insights ⭐
+"""Insight ⭐
 
 1. **Cluster 0:** Customers in Cluster 0 stand out with significantly higher average values for 'Quantity' and 'Revenue'. This cluster likely represents high-value customers who make large and frequent purchases.
 
 2. **Cluster 1:** Customers in Cluster 1 have relatively lower average values across all metrics, indicating that they might be making smaller and less frequent purchases.
 
 3. **Cluster 2:** Customers in Cluster 2 have moderate average values for 'Revenue', suggesting they make moderate-sized purchases.
+
+### **4.4.2 Cluster Separation Visualization**
+"""
+
+pca_non_uk = PCA(n_components=2) # Visualize cluster separation using PCA
+data_pca_non_uk = pca_non_uk.fit_transform(numeric_features_standardized)
+data_pca_non_uk_df = pd.DataFrame(data_pca_non_uk, columns=['PC1', 'PC2'])
+data_pca_non_uk_df['Cluster'] = non_uk_df['Cluster']
+
+plt.figure(figsize=(10, 6))
+for cluster in range(num_clusters):
+    cluster_data = data_pca_non_uk_df[data_pca_non_uk_df['Cluster'] == cluster]
+    plt.scatter(cluster_data['PC1'], cluster_data['PC2'], label=f'Cluster {cluster}')
+
+plt.title('PCA - Cluster Separation for Non-UK Customers')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.legend()
+plt.show()
+
+"""Insight ⭐
+
+1. **Cluster 0:** Customers in Cluster 0 are characterized by a wide range of values in both PC1 and PC2.
+
+2. **Cluster 1:** Customers in Cluster 1 have relatively moderate values in both PC1 and PC2.
+The absence of extremely high or low values suggests a more uniform pattern in purchasing behavior among customers in this cluster.
+This cluster may represent customers with moderate-sized and consistent purchases.
+
+3. **Cluster 2:** Customers in Cluster 2 show a significant range of values in both PC1 and PC2.
+
+### **4.4.3 Number of Observations in Each Cluster**
+"""
+
+non_uk_clustered_groups = non_uk_df.groupby('Cluster')
+non_uk_num_observations_summary = pd.DataFrame({'Num_Observations': non_uk_clustered_groups.size()})
+
+# Bar plot for number of observations in each cluster
+plt.figure(figsize=(8, 5))
+sns.barplot(x=non_uk_num_observations_summary.index, y='Num_Observations', data=non_uk_num_observations_summary, palette='PuRd')
+plt.yscale('log') # Set logarithmic scale to better visualize clusters with smaller counts
+plt.title('Number of Observations in Each Cluster')
+plt.xlabel('Cluster')
+plt.ylabel('Number of Observations (log scale)')
+plt.tight_layout() # Auto adjust
+plt.show()
+
+"""Insight ⭐
+
+1. **Cluster 0:** Contains 36 observations.
+
+2. **Cluster 1:** Contains 1,849 observations.
+
+3. **Cluster 2:** Contains 4 observations.
+
+In summary, the "Num_Observations" column represents the count of data points within each cluster. It indicates how many data points are assigned to each cluster based on the clustering analysis. In this case, Cluster 1 has a significantly larger number of observations compared to Clusters 0 and 2.
 """
