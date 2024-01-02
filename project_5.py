@@ -249,6 +249,9 @@ grouped_df.head()
 silhouette_kproto = silhouette_score(numeric_data_scaled, grouped_df['Cluster']) # Evaluate clustering using Silhouette Score
 print(f"Silhouette Score for k-Prototypes: {silhouette_kproto}")
 
+cluster_centroids = kproto.cluster_centroids_ # Represents the cluster centroids
+print("Cluster Centroids:\n", cluster_centroids)
+
 """Insight ⭐
 
 A Silhouette Score of 0.98 for 3 clusters is very high and close to the maximum value of 1. This suggests that the clusters are well-separated and distinct from each other. High Silhouette Scores generally indicate good clustering results, where each data point is closer to its own cluster than to the neighboring clusters.
@@ -269,7 +272,7 @@ plt.show()
 
 """Insights ⭐
 
-1. **Cluster 0:** Customers in Cluster 0 have relatively lower average values across all metrics, indicating that they might be making smaller and less frequent purchases
+1. **Cluster 0:** Customers in Cluster 0 have relatively lower average values across all metrics, indicating that they might be making smaller and less frequent purchases.
 
 2. **Cluster 1:** Customers in Cluster 1 have moderate average values for 'Quantity' and 'Revenue', suggesting they make moderate-sized purchases.
 
@@ -353,10 +356,45 @@ numeric_features = non_uk_df[['Quantity', 'UnitPrice', 'Revenue']]  # Select rel
 scaler = StandardScaler()
 numeric_features_standardized = scaler.fit_transform(numeric_features) # Standardize numeric features
 
-"""## **4.3 Perform Clustering**"""
+"""## **4.3 Clustering**
+
+### **4.3.1 Cluster Formation**
+"""
 
 num_clusters = 3
 kmeans = KMeans(n_clusters=num_clusters, random_state=123)
 non_uk_df['Cluster'] = kmeans.fit_predict(numeric_features_standardized)
 clustered_non_uk_df = non_uk_df[['Quantity', 'UnitPrice', 'Revenue', 'Cluster', 'Country']]
 clustered_non_uk_df.head()
+
+"""### **4.3.2 Cluster Validation**"""
+
+silhouette_avg = silhouette_score(numeric_features_standardized, non_uk_df['Cluster'])
+print(f"Silhouette Score for {num_clusters} clusters: {silhouette_avg:.4f}")
+
+"""Insight ⭐
+
+A Silhouette Score of 0.9131 for 3 clusters is very high and close to the maximum value of 1. This suggests that the clusters are well-separated, and data points within each cluster are much more similar to each other than to data points in other clusters. It's a strong indication that the chosen number of clusters (3 in this case) is appropriate and that the clustering algorithm has successfully created distinct and well-defined clusters.
+
+## **4.4 Analysis of Cluster Characteristics**
+
+### **4.4.1 Cluster Profiles Analysis**
+"""
+
+non_uk_cluster_profiles = non_uk_df.groupby('Cluster').mean() # Analyze cluster profiles
+non_uk_cluster_profiles.plot(kind='bar', figsize=(12, 6), colormap='PuRd') # Plot cluster profiles
+plt.title('Cluster Profiles')
+plt.xlabel('Cluster')
+plt.ylabel('Mean Value')
+plt.legend(title='Feature', bbox_to_anchor=(1, 1))
+plt.tight_layout() # Auto adjust
+plt.show()
+
+"""Insights ⭐
+
+1. **Cluster 0:** Customers in Cluster 0 stand out with significantly higher average values for 'Quantity' and 'Revenue'. This cluster likely represents high-value customers who make large and frequent purchases.
+
+2. **Cluster 1:** Customers in Cluster 1 have relatively lower average values across all metrics, indicating that they might be making smaller and less frequent purchases.
+
+3. **Cluster 2:** Customers in Cluster 2 have moderate average values for 'Revenue', suggesting they make moderate-sized purchases.
+"""
